@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { Booking, BookingDocument } from './schema/booking.schema';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { use } from 'passport';
+import { exec } from 'child_process';
 
 @Injectable()
 export class BookingService {
@@ -25,14 +26,11 @@ export class BookingService {
     }
 
     return this.bookingModel.create({ ...dto, user: UserId });
-  } // ✅ ปิด create ให้ครบ
-
-  // findAll() {
-  //   return this.bookingModel.find().populate('user').populate('room');
-  // }
+  }
 
   async findAll(user: any) {
     // 🔥 ถ้าเป็น admin → เห็นทั้งหมด
+    const query = user.role === 'admin' ? {} : { user: user.userId };
     if (user.role === 'admin') {
       return this.bookingModel.find().populate('user').populate('room');
     }
@@ -41,19 +39,24 @@ export class BookingService {
     return this.bookingModel
       .find({ user: user.userId })
       .populate('user')
-      .populate('room');
+      .populate('room','username name')
+      .exec();
   }
-  findOne(id: string) {
-    return this.bookingModel.findById(id);
+  // findOne(id: string) {
+  //   return this.bookingModel.findById(id);
+  // }
+  async findOne(id: string) {
+    const booking = await this.bookingModel.findById(id).populate('user').populate('room');
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+    return booking;
   }
-
   update(id: string, updateBookingDto: UpdateBookingDto) {
     return this.bookingModel.findByIdAndUpdate(id, updateBookingDto, { new: true });
   }
 
-  // remove(id: string) {
-  //   return this.bookingModel.findByIdAndDelete(id);
-  // }
+
   async remove(id: string, user: any) {
     const booking = await this.bookingModel.findById(id);
 

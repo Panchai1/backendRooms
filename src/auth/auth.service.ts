@@ -10,8 +10,7 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private jwtService: JwtService,
+    constructor(private jwtService: JwtService,
         @InjectModel(User.name) private userModel: any,
     ) { }
 
@@ -134,7 +133,7 @@ export class AuthService {
             role: 'user',
         });
 
-        return {
+        return {  
             id: newUser._id,
             email: newUser.email,
             role: newUser.role,

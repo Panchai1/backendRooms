@@ -1,7 +1,9 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsString, IsNumber,IsOptional } from 'class-validator';
+import { CreateRoomDto } from './create-room.dto';
 
-export class UpdateRoomDto {
+export class UpdateRoomDto extends PartialType(CreateRoomDto){
     @IsString()
     readonly name?: string;
     @IsString()

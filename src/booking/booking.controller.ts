@@ -16,10 +16,7 @@ export class BookingController {
 
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.bookingService.findAll();
-  // }
+  
   @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll(@Req() req) {

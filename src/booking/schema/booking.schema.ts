@@ -13,8 +13,8 @@ export class Booking {
     })
     user: mongoose.Types.ObjectId;
 
-    @Prop({ required: true })
-    room: string;
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true })
+    room: mongoose.Types.ObjectId;
 
     @Prop({ required: true })
     date: string;

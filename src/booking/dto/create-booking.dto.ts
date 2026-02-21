@@ -1,11 +1,23 @@
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateBookingDto {
+  @IsString()      // ต้องมี Decorator ทุกตัว
+  @IsNotEmpty()    // เพื่อบอกว่าห้ามว่าง
+  readonly room: string;
 
-  room: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // readonly bookedBy: string;
 
-  bookedBy: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly date: string;
 
-  date: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly startTime: string;
 
-  startTime: string;   
-  endTime: string;     
+  @IsString()
+  @IsNotEmpty()
+  readonly endTime: string;
 }
