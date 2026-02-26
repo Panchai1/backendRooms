@@ -7,6 +7,7 @@ import { Req } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { dot } from 'node:test/reporters';
 import { LoginDto } from './dto/login.dto';
+import {JwtRefreshGuard} from './jwt/jwt-refresh.guard'
 
 
 @Controller('auth')
@@ -18,8 +19,17 @@ export class AuthController {
         return this.authService.login(dto);
     }
 
+    // @Post('refresh')
+    // refresh(@Body('refreshToken') refreshToken: string) {
+    //     return this.authService.refresh(refreshToken);
+    // }
+    @UseGuards(JwtRefreshGuard) // ใช้ Guard ที่เราเพิ่งสร้าง
     @Post('refresh')
-    refresh(@Body('refreshToken') refreshToken: string) {
+    async refresh(@Req() req: any) {
+        const userId = req.user.sub;
+        const refreshToken = req.user.refreshToken;
+
+        // เรียกใช้ฟังก์ชัน refresh ที่คุณเขียนไว้ก่อนหน้านี้
         return this.authService.refresh(refreshToken);
     }
 
