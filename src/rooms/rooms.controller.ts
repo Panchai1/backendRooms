@@ -14,12 +14,10 @@ import { AuthGuard } from '@nestjs/passport';
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) { }
 
-  // =========================
-  // 🔐 ADMIN ONLY - CREATE
-  // =========================
+  //  ADMIN ONLY - CREATE
+
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
-
   @Post()
   @UseInterceptors(FilesInterceptor('files', 5))
   create(
@@ -57,8 +55,4 @@ export class RoomsController {
     return this.roomsService.remove(id);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.roomsService.remove(id);
-  // }
 }

@@ -22,7 +22,7 @@ export class BookingService {
     });
 
     if (conflict) {
-      throw new BadRequestException('Time slot already booked');
+      throw new BadRequestException('ช่วงเวลาที่ถูกจองไว้แล้ว');
     }
 
     return this.bookingModel.create({ ...dto, user: UserId });
@@ -32,26 +32,28 @@ export class BookingService {
     // 🔥 ถ้าเป็น admin → เห็นทั้งหมด
     const query = user.role === 'admin' ? {} : { user: user.userId };
     if (user.role === 'admin') {
-      return this.bookingModel.find().populate('user').populate('room');
+      return this.bookingModel.find().populate('user','name').populate('room');
     }
 
     // 🔥 ถ้าเป็น user → เห็นเฉพาะของตัวเอง
     return this.bookingModel
       .find({ user: user.userId })
-      .populate('user')
+      .populate('user','name email')
       .populate('room','username name')
       .exec();
   }
-  // findOne(id: string) {
-  //   return this.bookingModel.findById(id);
-  // }
+   
+
+
   async findOne(id: string) {
-    const booking = await this.bookingModel.findById(id).populate('user').populate('room');
+    const booking = await this.bookingModel.findById(id).populate('user','name').populate('room','name');
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException('ไม่พบการจอง');
     }
     return booking;
   }
+
+
   update(id: string, updateBookingDto: UpdateBookingDto) {
     return this.bookingModel.findByIdAndUpdate(id, updateBookingDto, { new: true });
   }
@@ -61,15 +63,15 @@ export class BookingService {
     const booking = await this.bookingModel.findById(id);
 
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException('ไม่พบการจอง');
     }
 
-    // 🔥 ถ้าไม่ใช่ admin และไม่ใช่เจ้าของ → ห้ามลบ
+    //  ถ้าไม่ใช่ admin และไม่ใช่เจ้าของ → ห้ามลบ
     if (
       user.role !== 'admin' &&
       booking.user.toString() !== user.userId
     ) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException('การเข้าถึงถูกปฏิเสธ');
     }
 
     return this.bookingModel.findByIdAndDelete(id);

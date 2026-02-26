@@ -2,22 +2,24 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/users/schema/user.schema';
+import { User, UserDocument } from 'src/users/schema/user.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { Model } from 'mongoose';
+
 
 
 
 @Injectable()
 export class AuthService {
     constructor(private jwtService: JwtService,
-        @InjectModel(User.name) private userModel: any,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) { }
 
 
-    // ==========================
-    // ✅ LOGIN (เพิ่มเก็บ refreshTokenHash ตรงนี้)
-    // ==========================
+
+    //  LOGIN (เพิ่มเก็บ refreshTokenHash ตรงนี้)
+
 
     async login(dto: LoginDto) {
         const user = await this.validateUser(dto.email, dto.password);
@@ -56,30 +58,30 @@ export class AuthService {
     }
 
 
-    // ==========================
-    // ✅ VALIDATE USER (ใช้ใน login)
-    // ==========================
+  
+    // VALIDATE USER (ใช้ใน login)
+    
 
 
     async validateUser(email: string, password: string) {
         const user = await this.userModel.findOne({ email });
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('ข้อมูลประจำตัวไม่ถูกต้อง');
         }
 
         const isMatch = await bcrypt.compare(password, user.passwordHash);
 
         if (!isMatch) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('ข้อมูลประจำตัวไม่ถูกต้อง');
         }
 
         return user;
     }
 
-    // ==========================
-    // ✅ REFRESH (เพิ่มตรวจ hash ตรงนี้)
-    // ==========================
+ 
+    //  REFRESH (เพิ่มตรวจ hash ตรงนี้)
+    
     async refresh(token: string) {
         try {
             const payload = this.jwtService.verify(token, {
@@ -92,7 +94,7 @@ export class AuthService {
                 throw new UnauthorizedException();
             }
 
-            // ✅ 🔥 เพิ่มตรงนี้ — compare token กับ hash
+            // ✅ 🔥 เพิ่มตรงนี้ — เปรียบเทียบ token กับ hash
             const isMatch = await bcrypt.compare(
                 token,
                 user.refreshTokenHash,
@@ -124,25 +126,27 @@ export class AuthService {
         });
 
         if (existingUser) {
-            throw new UnauthorizedException('Email already exists');
+            throw new UnauthorizedException('มีอีเมลอยู่แล้ว');
         }
-        const passwordHash = await bcrypt.hash(dto.password, 10);
+        const passwordHash = await bcrypt.hash(dto.password, 10); //การเก็บรหัสให้อ่านไม่ออก
         const newUser = await this.userModel.create({
+            name:dto.name,
             email: dto.email,
-            passwordHash: passwordHash,
-            role: 'user',
+            passwordHash: passwordHash, 
+            role: 'user',                                //บทบาทเริ้มต้น
         });
 
         return {  
             id: newUser._id,
+            name:newUser.name,
             email: newUser.email,
             role: newUser.role,
         };
     }
 
-    // ==========================
-    // ✅ LOGOUT (เพิ่มใหม่ทั้งก้อน)
-    // ==========================
+    
+   // LOGOUT (เพิ่มใหม่ทั้งก้อน)
+   
     async logout(userId: string) {
         // 🔥 ลบ refreshTokenHash ออกจาก DB
         await this.userModel.updateOne(
@@ -150,6 +154,6 @@ export class AuthService {
             { refreshTokenHash: null },
         );
 
-        return { message: 'Logged out successfully' };
+        return { message: 'ออกจากระบบเรียบร้อยแล้ว' };
     }
 }

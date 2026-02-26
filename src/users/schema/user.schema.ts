@@ -3,8 +3,11 @@ import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema({ timestamps: true }) // 👈 จะได้ createdAt / updatedAt อัตโนมัติ
+@Schema({ timestamps: true }) //  จะได้ createdAt / updatedAt อัตโนมัติ
 export class User {
+  @Prop({require:true})
+  name:string;
+
   @Prop({ unique: true, required: true })
   email: string;
 
